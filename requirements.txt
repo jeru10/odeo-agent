@@ -1,0 +1,18 @@
+﻿# Agent Odeo - Dépendances
+# Installation : pip install -r requirements.txt
+
+# LLM Local
+ollama>=0.4.0
+
+# Web Dashboard
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# API & Requêtes
+requests>=2.31.0
+
+# Base de données
+sqlite3  # Intégré dans Python
+
+# Utilitaires
+python-dotenv>=1.0.0

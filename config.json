@@ -1,0 +1,31 @@
+{
+    "agent": {
+        "name": "Agent Odeo",
+        "version": "1.0.0",
+        "language": "darija",
+        "style": "marocain"
+    },
+    "llm": {
+        "mode": "local",
+        "model": "mistral",
+        "api_key": "",
+        "api_url": "https://api.deepseek.com/v1/chat/completions"
+    },
+    "odeo": {
+        "enabled": false,
+        "api_url": "",
+        "api_key": ""
+    },
+    "whatsapp": {
+        "enabled": false,
+        "phone_number_id": "",
+        "token": ""
+    },
+    "dashboard": {
+        "port": 5000,
+        "host": "0.0.0.0"
+    },
+    "database": {
+        "path": "data/agent.db"
+    }
+}

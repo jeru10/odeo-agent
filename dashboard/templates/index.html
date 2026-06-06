@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ agent_name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; color: #333; }
+        
+        /* Header */
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 30px; }
+        .header h1 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header .subtitle { color: #e94560; font-size: 14px; margin-top: 5px; }
+        .header .flag { font-size: 28px; }
+        
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        /* Cards */
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 16px; color: #666; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        
+        /* Status */
+        .status-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .status-item { background: white; border-radius: 10px; padding: 15px 20px; flex: 1; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .status-item .label { font-size: 12px; color: #999; }
+        .status-item .value { font-size: 18px; font-weight: bold; margin-top: 5px; }
+        .status-item .value.ok { color: #27ae60; }
+        .status-item .value.error { color: #e74c3c; }
+        
+        /* Chat */
+        .chat-box { border: 1px solid #e0e0e0; border-radius: 8px; height: 400px; overflow-y: auto; padding: 15px; margin-bottom: 10px; background: #fafafa; }
+        .chat-msg { margin-bottom: 10px; padding: 10px 15px; border-radius: 8px; max-width: 80%; }
+        .chat-msg.user { background: #1a1a2e; color: white; margin-left: auto; }
+        .chat-msg.agent { background: #f0f0f0; color: #333; }
+        .chat-msg .time { font-size: 11px; color: #999; margin-top: 5px; }
+        .chat-input { display: flex; gap: 10px; }
+        .chat-input input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .chat-input button { background: #e94560; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .chat-input button:hover { background: #c73650; }
+        
+        /* Config form */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .btn { background: #1a1a2e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn:hover { background: #16213e; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #219a52; }
+        
+        .full-width { grid-column: 1 / -1; }
+        
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span class="flag">🇲🇦</span>
+            {{ agent_name }}
+            <span style="font-size: 14px; background: #e94560; padding: 3px 10px; border-radius: 12px; margin-left: 10px;">v1.0</span>
+        </h1>
+        <div class="subtitle">Assistant IA pour Restaurants — Maroc</div>
+    </div>
+    
+    <div class="container">
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <div class="status-item">
+                <div class="label">Agent</div>
+                <div class="value ok" id="agentStatus">● Actif</div>
+            </div>
+            <div class="status-item">
+                <div class="label">LLM</div>
+                <div class="value" id="llmStatus">⏳ Vérification...</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Mode</div>
+                <div class="value" id="modeStatus">Local</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Modèle</div>
+                <div class="value" id="modelStatus">mistral</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Chat -->
+            <div class="card full-width">
+                <h2>🤖 Discuter avec l'Agent</h2>
+                <div class="chat-box" id="chatBox">
+                    <div class="chat-msg agent">
+                        Salam ! Je suis ton agent IA pour le restaurant. 🇲🇦<br>
+                        Demande-moi : analyse des ventes, conseils, alertes stock...
+                        <div class="time">Maintenant</div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Ex: Chhal l'youm ?" onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()">Envoyer</button>
+                </div>
+            </div>
+            
+            <!-- Configuration -->
+            <div class="card">
+                <h2>⚙️ Configuration LLM</h2>
+                <div class="form-group">
+                    <label>Mode</label>
+                    <select id="llmMode" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                        <option value="local">Local (Ollama — gratuit)</option>
+                        <option value="api">API (DeepSeek/OpenAI)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Modèle</label>
+                    <input type="text" id="llmModel" value="mistral" placeholder="mistral, phi, llama3...">
+                </div>
+                <div class="form-group" id="apiKeyGroup">
+                    <label>Clé API</label>
+                    <input type="password" id="apiKey" placeholder="sk-...">
+                </div>
+                <button class="btn" onclick="saveConfig()">💾 Sauvegarder</button>
+                <button class="btn btn-success" style="margin-left:10px;" onclick="checkOllama()">🔍 Tester Ollama</button>
+            </div>
+            
+            <!-- Restaurant -->
+            <div class="card">
+                <h2>🏪 Ajouter un Restaurant</h2>
+                <div class="form-group">
+                    <label>Nom du restaurant</label>
+                    <input type="text" id="restoName" placeholder="Ex: Chez Yassine">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="text" id="restoPhone" placeholder="+212 6 XX XX XX XX">
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="restoAddress" placeholder="Marrakech, Médina...">
+                </div>
+                <button class="btn" onclick="addRestaurant()">✅ Ajouter</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Envoyer un message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            
+            const chatBox = document.getElementById('chatBox');
+            
+            // Message user
+            chatBox.innerHTML += `<div class="chat-msg user">${msg}<div class="time">${new Date().toLocaleTimeString()}</div></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = '';
+            
+            // Response agent
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: msg})
+                });
+                const data = await res.json();
+                chatBox.innerHTML += `<div class="chat-msg agent">${data.response}<div class="time">${new Date().toLocaleTimeString()}</div></div>`;
+            } catch(e) {
+                chatBox.innerHTML += `<div class="chat-msg agent" style="background:#ffe0e0;">❌ Erreur de connexion</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // Statut
+        async function loadStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                document.getElementById('modeStatus').textContent = data.mode || '?';
+                document.getElementById('modelStatus').textContent = data.model || '?';
+                
+                const llmEl = document.getElementById('llmStatus');
+                if (data.ollama && data.ollama.status === 'ok') {
+                    llmEl.textContent = '✅ Ollama ' + (data.ollama.models || []).join(', ');
+                    llmEl.className = 'value ok';
+                } else {
+                    llmEl.textContent = '⚠️ Ollama indisponible';
+                    llmEl.className = 'value error';
+                }
+            } catch(e) {
+                console.error('Status error:', e);
+            }
+        }
+        
+        // Config
+        async function saveConfig() {
+            const data = {
+                'llm.mode': document.getElementById('llmMode').value,
+                'llm.model': document.getElementById('llmModel').value,
+                'llm.api_key': document.getElementById('apiKey').value
+            };
+            await fetch('/api/config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert('✅ Configuration sauvegardée ! Redémarre l\'agent pour appliquer.');
+        }
+        
+        // Check Ollama
+        async function checkOllama() {
+            const res = await fetch('/api/ollama/check');
+            const data = await res.json();
+            if (data.status === 'ok') {
+                alert('✅ Ollama fonctionne ! Modèles : ' + (data.models || []).join(', '));
+            } else {
+                alert('❌ Ollama non accessible. Lance "ollama serve" ou installe Ollama depuis ollama.ai');
+            }
+            loadStatus();
+        }
+        
+        // Ajouter restaurant
+        async function addRestaurant() {
+            const data = {
+                name: document.getElementById('restoName').value,
+                phone: document.getElementById('restoPhone').value,
+                address: document.getElementById('restoAddress').value
+            };
+            if (!data.name) { alert('Nom requis'); return; }
+            
+            await fetch('/api/restaurants', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert('✅ Restaurant ajouté !');
+        }
+        
+        // Initialisation
+        loadStatus();
+        setInterval(loadStatus, 10000);
+    </script>
+</body>
+</html>
