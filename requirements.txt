@@ -12,7 +12,7 @@ flask-cors>=4.0.0
 requests>=2.31.0
 
 # Base de données
-sqlite3  # Intégré dans Python
+# sqlite3 est inclus dans Python, pas besoin de l'installer
 
 # Utilitaires
 python-dotenv>=1.0.0

@@ -9,6 +9,10 @@ import json
 import threading
 import webbrowser
 
+# Forcer UTF-8 dans la console Windows
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 # Imports de notre projet
 from core.config import Config
 from core.database import Database
